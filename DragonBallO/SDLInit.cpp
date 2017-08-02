@@ -1,7 +1,12 @@
 #include "SDLInit.h"
 
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define BG_R 0x68
+#define BG_G 0xB1
+#define BG_B 0x38
+#define BG_A 0xFF
+
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
 //The window we'll be rendering to
 SDL_Window* window = NULL;
