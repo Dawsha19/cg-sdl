@@ -1,9 +1,10 @@
-#pragma once
 
-class GameManager {
-public:
+
+class GameManager{
+	public:
 		bool Init();
-		bool Cleanup();
-		bool Render();
+		void Cleanup();
+
 		void Update();
+		void Render();
 };
