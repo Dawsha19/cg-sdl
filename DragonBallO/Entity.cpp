@@ -26,6 +26,11 @@ void Entity::SetSize(int width, int height) {
 	mHeight = height;
 }
 
+MyMath::Float2 Entity::GetPosition() {
+	MyMath::Float2 pos{ mXPos, mYPos };
+	return pos;
+}
+
 void Entity::InitSpriteSheet(uInt startClipIndex, uInt numSpriteCLipsX, uInt numSpriteClipsY) {
 	if (numSpriteCLipsX == 0 || numSpriteClipsY == 0) {
 		printf("Number of sprite clips must be at least 1.");
@@ -71,10 +76,10 @@ void Entity::SetAnchorOffset(Int2 anchorOffset, uInt index) {
 }
 
 bool Entity::CheckCollision(Entity &other) {
-	float leftDist = other.mXPos - mXPos;
-	float upDist = other.mYPos - mYPos;
-	float rightDist = (mXPos + mWidth) - (other.mXPos + other.mWidth);
-	float downDist = (mYPos + mHeight) - (other.mYPos + other.mHeight);
+	float leftDist = other.mXPos - mXPos + mOriginOffset.x;
+	float upDist = other.mYPos - mYPos + mOriginOffset.y;
+	float rightDist = (mXPos + mWidth) - ((other.mXPos + mWidth) + (other.mWidth -mColliderOffset.x));
+	float downDist = (mYPos + mHeight) - ((other.mYPos + mHeight) + (other.mHeight - mColliderOffset.y));
 
 	bool collidesHoriz = (rightDist < mWidth && leftDist < mWidth);
 	bool collidesVert = (downDist < mHeight && upDist < mHeight);

@@ -27,8 +27,17 @@ public:
 	void SetCollision(bool blocking) { mCollisionBlocks = blocking; }
 	bool CheckCollision(Entity &other);
 	
+	MyMath::Float2 GetPosition();
+
 	SDL_Rect* GetSpriteClip();
 	Int2* GetAnchorOffset();
+
+	void ConfigureCollision(bool pushesOut, Int2 colliderOffset = { 0,0 }, Int2 originOffset = { 0,0 }) {
+		mCollisionBlocks = pushesOut;
+		mColliderOffset = colliderOffset;
+		mOriginOffset = originOffset;
+	}
+
 
 protected:
 	//The actual hardware texture
@@ -52,4 +61,7 @@ protected:
 	//nullptr is better for ambiguity purposes...
 	SDL_Rect *mSpriteCLips = nullptr;
 	Int2 *mAnchorOffsets = nullptr;
+
+	Int2 mColliderOffset{ 0,0 };
+	Int2 mOriginOffset{ 0,0 };
 };

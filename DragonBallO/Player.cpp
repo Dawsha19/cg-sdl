@@ -1,6 +1,7 @@
 #include "Player.h"
+#include <iostream>
 
-#define ANIM_RIGHT_COUNT 3
+#define ANIM_RIGHT_COUNT 6
 #define ANIM_LEFT_COUNT 6
 #define ANIM_UP_COUNT 8
 #define ANIM_DOWN_COUNT 8
@@ -28,6 +29,8 @@ extern bool gFourthKeyUp;	//keys 4
 namespace {
 	int lastMoveIndex = 4;
 	int lastAttackIndex = 0;
+	float oldX = 0.0f;
+	float oldY = 0.0f;
 }
 
 namespace {
@@ -47,7 +50,7 @@ namespace {
 	float animAttackSpeed = 12;
 
 	//Animation indices...
-	int animRightIndices[ANIM_RIGHT_COUNT] = { 83, 84, 85/*, 86, 87, 88*/ };
+	int animRightIndices[ANIM_RIGHT_COUNT] = { 83, 84, 85, 86, 87, 88 };
 	int animLeftIndices[ANIM_LEFT_COUNT] = { 23, 24, 25, 26, 27, 28 };
 	int animUpIndices[ANIM_UP_COUNT] = { 75, 76, 77, 78, 79,80,81,82 };
 	int animDownIndices[ANIM_DOWN_COUNT] = { 15, 16, 17, 18, 19, 20, 21, 22 };
@@ -72,6 +75,12 @@ void Player::Move() {
 	//Update position...	//TODO: Should create velocity vector and normalize...
 	mXPos += gHorizKeysHeld * velocity;
 	mYPos += gVertKeysHeld * velocity;
+
+	if (oldX != mXPos || oldY != mYPos) {
+		std::cout << mXPos << " " << mYPos << std::endl;
+		oldX = mXPos;
+		oldY = mYPos;
+	}
 
 	//Update animations...
 	if (gHorizKeysHeld > 0) {

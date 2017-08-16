@@ -2,6 +2,7 @@
 #include "SDLInit.h"
 #include "Player.h"
 #include "Actor.h"
+#include "Camera.h"
 
 extern SDL_Window* gWindow;
 extern SDL_Renderer* gRenderer;
@@ -13,26 +14,37 @@ extern int SCREEN_HEIGHT;		//TODO: currently not using...
 static SDLInit sdlInit;
 
 namespace {
+	Camera camera;
 	Player player;
 	Entity tree;
+	Entity house;
+	Entity gridGuide;
 }
 
 void InitEntities() {
 	//Setting path names...
 	player.SetTexturePath("textures/link_sprite.png");
 	tree.SetTexturePath("textures/tree_green.gif");
+	house.SetTexturePath("textures/link_house.png");
+	gridGuide.SetTexturePath("textures/gridGuide.png");
 
 	//Loading textures...
 	sdlInit.LoadTexture(player);
 	sdlInit.LoadTexture(tree);
+	sdlInit.LoadTexture(house);
+	sdlInit.LoadTexture(gridGuide);
 
 	//Setting position information...
 	player.SetPosition(0, 0);
 	tree.SetPosition(200, 300);
+	house.SetPosition(400, 100);
+	gridGuide.SetPosition(0, 0);
 
 	//Setting size information...
 	player.SetSize(50, 50);
 	tree.SetSize(64, 78);
+	house.SetSize(232, 178);
+	gridGuide.SetSize(640, 480);
 
 	//Set sprite sheet texture coordinates...
 	player.InitSpriteSheet(0, 15, 10);
@@ -65,20 +77,18 @@ void InitEntities() {
 
 	player.SetSpriteClip(270, 121, 30, 30, 84);		//right move...
 	player.SetSpriteClip(300, 121, 30, 30, 85);
-	//player.SetSpriteClip(240, 120, 30, 30, 85);
-	//player.SetSpriteClip(240, 120, 30, 30, 86);
-	//player.SetSpriteClip(240, 120, 30, 30, 87);
-	//player.SetSpriteClip(240, 120, 30, 30, 88);
+	player.SetSpriteClip(330, 120, 30, 30, 86);
+	player.SetSpriteClip(360, 120, 30, 30, 87);
+	player.SetSpriteClip(390, 120, 30, 30, 88);
 
 
-	player.SetSpriteClip(60, 1, 30, 30, 2);			//left...
+	player.SetSpriteClip(240, 30, 30, 30, 23);			//left...
 
-	player.SetSpriteClip(0, 31, 30, 30, 23);		//left move...
-	player.SetSpriteClip(30, 31, 30, 30, 24);
-	player.SetSpriteClip(60, 31, 30, 30, 25);
-	player.SetSpriteClip(90, 31, 30, 30, 26);
-	player.SetSpriteClip(120, 31, 30, 30, 27);
-	player.SetSpriteClip(150, 31, 30, 30, 28);
+	player.SetSpriteClip(270, 31, 30, 30, 24);		//left move...
+	player.SetSpriteClip(300, 31, 30, 30, 25);
+	player.SetSpriteClip(330, 31, 30, 30, 26);
+	player.SetSpriteClip(360, 31, 30, 30, 27);
+	player.SetSpriteClip(390, 31, 30, 30, 28);
 
 
 	player.SetSpriteClip(170, 141, 30, 31, 61);		//first left attack...
@@ -99,7 +109,8 @@ void InitEntities() {
 	player.SetAnchorOffset({-11, -13}, 35);			//first right attack...=>2
 
 	//Setup collision...
-	tree.SetCollision(true);
+	tree.ConfigureCollision(true, { 80,90 }, { 0,15 }); //(left offset, topoffset) second set (right offset, down offset)
+	house.ConfigureCollision(true, { 250,200}, { 0,40 });
 }
 
 bool GameManager::Init(){
@@ -114,6 +125,7 @@ bool GameManager::Init(){
 void GameManager::Cleanup(){
 	sdlInit.CleanupTexture(player);
 	sdlInit.CleanupTexture(tree);
+	sdlInit.CleanupTexture(house);
 	sdlInit.Cleanup();
 }
 
@@ -123,12 +135,15 @@ void GameManager::Update() {
 	player.Attack();
 
 	(void)tree.CheckCollision(player);
+	(void)house.CheckCollision(player);
 
 	sdlInit.Update();
 }
 
 void GameManager::Render(){
 	sdlInit.Render();
+	sdlInit.DrawTexture(gridGuide);
 	sdlInit.DrawTexture(tree);
 	sdlInit.DrawTexture(player);
+	sdlInit.DrawTexture(house);
 }
