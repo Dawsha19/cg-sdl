@@ -1,24 +1,32 @@
 #include "GameManager.h"
 #include "SDLInit.h"
 #include "Player.h"
-#include "Actor.h"
 #include "Camera.h"
+
+#define PAN_CAMERA_INSTEAD true
+#define SHOW_COLLIDERS false
+
+//Also camera dimension...
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
+
+const int WORLD_WIDTH = 2400;
+const int WORLD_HEIGHT = 2400;
 
 extern SDL_Window* gWindow;
 extern SDL_Renderer* gRenderer;
 
-//Screen dimension constants
-extern int SCREEN_WIDTH;		//TODO: currently not using...
-extern int SCREEN_HEIGHT;		//TODO: currently not using...
+Camera gCamera;
 
 static SDLInit sdlInit;
 
 namespace {
 	Camera camera;
 	Player player;
-	Entity tree;
-	Entity house;
-	Entity gridGuide;
+	Sprite tree;
+	Sprite house;
+	Sprite gridGuide;
+	Sprite boulder;
 }
 
 void InitEntities() {
@@ -27,24 +35,28 @@ void InitEntities() {
 	tree.SetTexturePath("textures/tree_green.gif");
 	house.SetTexturePath("textures/link_house.png");
 	gridGuide.SetTexturePath("textures/gridGuide.png");
+	boulder.SetTexturePath("textures/boulder.png");
 
 	//Loading textures...
 	sdlInit.LoadTexture(player);
 	sdlInit.LoadTexture(tree);
 	sdlInit.LoadTexture(house);
 	sdlInit.LoadTexture(gridGuide);
+	sdlInit.LoadTexture(boulder);
 
 	//Setting position information...
 	player.SetPosition(0, 0);
 	tree.SetPosition(200, 300);
 	house.SetPosition(400, 100);
 	gridGuide.SetPosition(0, 0);
+	boulder.SetPosition(200, 150);
 
 	//Setting size information...
-	player.SetSize(50, 50);
-	tree.SetSize(64, 78);
-	house.SetSize(232, 178);
-	gridGuide.SetSize(640, 480);
+	player.SetSpriteSize(50, 50);
+	tree.SetSpriteSize(64, 78);
+	house.SetSpriteSize(232, 178);
+	gridGuide.SetSpriteSize(640, 480);
+	boulder.SetSpriteSize(45, 45);
 
 	//Set sprite sheet texture coordinates...
 	player.InitSpriteSheet(0, 15, 10);
@@ -109,8 +121,14 @@ void InitEntities() {
 	player.SetAnchorOffset({-11, -13}, 35);			//first right attack...=>2
 
 	//Setup collision...
+	player.ConfigureCollision(true, { 0, 14 }, { 35, 16 });
 	tree.ConfigureCollision(true, { 80,90 }, { 0,15 }); //(left offset, topoffset) second set (right offset, down offset)
 	house.ConfigureCollision(true, { 250,200}, { 0,40 });
+	boulder.ConfigureCollision(true);
+
+	//player.AddCollidableEntity(tree);
+	player.AddCollidableEntity(boulder);
+	//player.AddCollidableEntity(house);
 }
 
 bool GameManager::Init(){
@@ -123,27 +141,42 @@ bool GameManager::Init(){
 }
 
 void GameManager::Cleanup(){
-	sdlInit.CleanupTexture(player);
-	sdlInit.CleanupTexture(tree);
-	sdlInit.CleanupTexture(house);
+	sdlInit.CleanupSprite(player);
+	sdlInit.CleanupSprite(tree);
+	sdlInit.CleanupSprite(house);
+	sdlInit.CleanupSprite(boulder);
 	sdlInit.Cleanup();
 }
 
 //TODO: Add deltatime later...
 void GameManager::Update() {
-	player.Move();
-	player.Attack();
+	tree.Update();
+	player.Update();
+	boulder.Update();
 
-	(void)tree.CheckCollision(player);
-	(void)house.CheckCollision(player);
+	//Needs to come last...
+	if (PAN_CAMERA_INSTEAD) {
+		gCamera.PanWith(player);
+	}
+	else {
+		gCamera.LookAt(player);
+	}
 
 	sdlInit.Update();
 }
 
-void GameManager::Render(){
+void GameManager::Render() {
 	sdlInit.Render();
-	sdlInit.DrawTexture(gridGuide);
-	sdlInit.DrawTexture(tree);
-	sdlInit.DrawTexture(player);
-	sdlInit.DrawTexture(house);
+
+	sdlInit.DrawSprite(tree);
+	sdlInit.DrawSprite(boulder);
+	sdlInit.DrawSprite(player);
+	sdlInit.DrawSprite(house);
+
+	//Needs to come last...
+	if (SHOW_COLLIDERS) {
+		//sdlInit.DrawEntityCollider(tree);
+		sdlInit.DrawEntityCollider(boulder);
+		sdlInit.DrawEntityCollider(player);
+	}
 }

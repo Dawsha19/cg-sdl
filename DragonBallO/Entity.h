@@ -2,66 +2,51 @@
 #include <string>
 #include <SDL_image.h>
 #include "MyMath.h"
+#include <vector>
 
-class Entity{
+class Entity {
 
-friend class SDLInit;
-using uInt = unsigned int;
+	friend class SDLInit;
+	friend class Camera;
 
-using Int2 = MyMath::Int2;
+	using UInt = unsigned int;
+	using Int2 = MyMath::Int2;
+	using Float2 = MyMath::Float2;
+	using UByte = MyMath::UByte;
 
 public:
 	//Needs to be virtual so that derived destructor gets called...
-	virtual ~Entity();
+	virtual ~Entity() {};
 
 public:
-	void SetTexturePath(const char* texturePath);
+	virtual void Update();
+	virtual void OnCollision(Entity *other);
+
 	void SetPosition(float x, float y);
-	void SetSize(int width, int height);
+	void SetMoveSpeed(float moveSpeed);
 
-	//Call InitSPriteSheet before calling SetSpriteClip...
-	void InitSpriteSheet(uInt startClipIndex, uInt numSpriteCLipsX, uInt numSpriteClipsY);
-	void SetSpriteClip(int x, int y, uInt w, uInt h, uInt index);
-	void SetAnchorOffset(Int2 anchorOffset, uInt index);
+	void ConfigureCollision(bool canBePashedBack, Int2 topLeftCollOffset = { 0, 0 },
+		Int2 bottomRightCollOffset = { 0, 0 });
 
-	void SetCollision(bool blocking) { mCollisionBlocks = blocking; }
-	bool CheckCollision(Entity &other);
-	
-	MyMath::Float2 GetPosition();
+	void AddCollidableEntity(Entity &entity);
 
-	SDL_Rect* GetSpriteClip();
-	Int2* GetAnchorOffset();
+private:
+	void CheckCollision();
 
-	void ConfigureCollision(bool pushesOut, Int2 colliderOffset = { 0,0 }, Int2 originOffset = { 0,0 }) {
-		mCollisionBlocks = pushesOut;
-		mColliderOffset = colliderOffset;
-		mOriginOffset = originOffset;
-	}
-
+	UByte mBlockedSides{ 0 };
 
 protected:
-	//The actual hardware texture
-	SDL_Texture* mTexture;
-	const char* mTexturePath;
+	Float2 mPos;
+	Int2 mSize;
 
-	float mXPos{0}, mYPos{0};
-	int mWidth{0}, mHeight{0};
+	Int2 mTopLeftCollOffset;
+	Int2 mBottomRightCollOffset;
 
 	//If this entity can move, it needs a move speed...
 	float mMoveSpeed{ 140.f };
 
-	//For pushing back entity (if collision succeeds)
-	bool mCollisionBlocks{false};
-
-	int mSpriteClipIndex{0};
-	int mNumSpriteClips{0};
-	int mNumSpriteClipsX{0};
-	int mNumSpriteClipsY{0};
-
-	//nullptr is better for ambiguity purposes...
-	SDL_Rect *mSpriteCLips = nullptr;
-	Int2 *mAnchorOffsets = nullptr;
-
-	Int2 mColliderOffset{ 0,0 };
-	Int2 mOriginOffset{ 0,0 };
+	//For collision...
+	std::vector<Entity*> mCollidableEntities;
+	bool mCanBePushedBack{ false };
+	int mHasCollided{ false };
 };
